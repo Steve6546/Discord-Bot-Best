@@ -7,6 +7,15 @@
  */
 
 export * from './activityItem';
+export * from './cardDesign';
+export * from './cardDesignAvatar';
+export * from './cardDesignAvatarShape';
+export * from './cardDesignBackgroundMode';
+export * from './cardDesignExtra';
+export * from './cardDesignUsername';
+export * from './cardDesignUsernameAlign';
+export * from './cardDesignUsernameFont';
+export * from './commandConfig';
 export * from './dashboardSummary';
 export * from './discordChannel';
 export * from './discordRole';
@@ -14,6 +23,7 @@ export * from './discordStatus';
 export * from './guild';
 export * from './guildDetails';
 export * from './healthStatus';
+export * from './messageSuite';
 export * from './welcomeSettings';
 export * from './welcomeSettingsInput';
 export * from './welcomeSettingsInputStyle';

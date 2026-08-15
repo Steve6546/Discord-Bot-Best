@@ -79,6 +79,157 @@ export const WelcomeSettingsStyle = {
   banner: 'banner',
 } as const;
 
+export type CardDesignBackgroundMode = typeof CardDesignBackgroundMode[keyof typeof CardDesignBackgroundMode];
+
+
+export const CardDesignBackgroundMode = {
+  url: 'url',
+  transparent: 'transparent',
+} as const;
+
+export type CardDesignAvatarShape = typeof CardDesignAvatarShape[keyof typeof CardDesignAvatarShape];
+
+
+export const CardDesignAvatarShape = {
+  square: 'square',
+  rounded: 'rounded',
+  circle: 'circle',
+} as const;
+
+export type CardDesignUsernameFont = typeof CardDesignUsernameFont[keyof typeof CardDesignUsernameFont];
+
+
+export const CardDesignUsernameFont = {
+  CairoBold: 'CairoBold',
+  ChangaBold: 'ChangaBold',
+  AlmaraiBold: 'AlmaraiBold',
+} as const;
+
+export type CardDesignUsernameAlign = typeof CardDesignUsernameAlign[keyof typeof CardDesignUsernameAlign];
+
+
+export const CardDesignUsernameAlign = {
+  right: 'right',
+  center: 'center',
+  left: 'left',
+} as const;
+
+export type CardDesignAvatar = {
+  enabled: boolean;
+  x: number;
+  y: number;
+  /**
+     * @minimum 32
+     * @maximum 600
+     */
+  size: number;
+  shape: CardDesignAvatarShape;
+};
+
+export type CardDesignUsername = {
+  enabled: boolean;
+  /** @maxLength 500 */
+  text: string;
+  x: number;
+  y: number;
+  font: CardDesignUsernameFont;
+  /**
+     * @minimum 8
+     * @maximum 160
+     */
+  size: number;
+  /**
+     * @minimum 0.8
+     * @maximum 3
+     */
+  lineHeight: number;
+  align: CardDesignUsernameAlign;
+  /** @pattern ^#[0-9a-fA-F]{6}$ */
+  color: string;
+  shadow: boolean;
+  /** @pattern ^#[0-9a-fA-F]{6}$ */
+  shadowColor: string;
+  /**
+     * @minimum -50
+     * @maximum 50
+     */
+  shadowX: number;
+  /**
+     * @minimum -50
+     * @maximum 50
+     */
+  shadowY: number;
+  /**
+     * @minimum 0
+     * @maximum 60
+     */
+  shadowBlur: number;
+};
+
+export type CardDesignExtra = {
+  enabled: boolean;
+  /** @nullable */
+  url: string | null;
+  x: number;
+  y: number;
+  /**
+     * @minimum 1
+     * @maximum 1200
+     */
+  width: number;
+  /**
+     * @minimum 1
+     * @maximum 1200
+     */
+  height: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  opacity: number;
+};
+
+export interface CardDesign {
+  /**
+     * @minimum 320
+     * @maximum 2400
+     */
+  width: number;
+  /**
+     * @minimum 180
+     * @maximum 1400
+     */
+  height: number;
+  backgroundMode: CardDesignBackgroundMode;
+  /** @nullable */
+  backgroundUrl: string | null;
+  avatar: CardDesignAvatar;
+  username: CardDesignUsername;
+  extra: CardDesignExtra;
+}
+
+export interface MessageSuite {
+  welcomeChannelEnabled: boolean;
+  /** @maxLength 1024 */
+  welcomeMessage: string;
+  dmEnabled: boolean;
+  /** @maxLength 1024 */
+  dmMessage: string;
+  leaveEnabled: boolean;
+  /** @maxLength 1024 */
+  leaveMessage: string;
+}
+
+export interface CommandConfig {
+  name: string;
+  enabled: boolean;
+  aliases: string[];
+  allowedRoleIds: string[];
+  blockedChannelIds: string[];
+  deleteCommand: boolean;
+  deleteBotResponse: boolean;
+}
+
 export interface WelcomeSettings {
   guildId: string;
   enabled: boolean;
@@ -92,6 +243,9 @@ export interface WelcomeSettings {
   backgroundUrl: string | null;
   includeInviter: boolean;
   autoRoleIds: string[];
+  cardDesign?: CardDesign;
+  messageSuite?: MessageSuite;
+  commandConfig?: CommandConfig[];
   /** @nullable */
   updatedAt: string | null;
 }
@@ -116,5 +270,8 @@ export interface WelcomeSettingsInput {
   backgroundUrl: string | null;
   includeInviter: boolean;
   autoRoleIds: string[];
+  cardDesign?: CardDesign;
+  messageSuite?: MessageSuite;
+  commandConfig?: CommandConfig[];
 }
 

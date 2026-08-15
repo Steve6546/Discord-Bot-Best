@@ -137,6 +137,49 @@ export const GetWelcomeSettingsParams = zod.object({
   "guildId": zod.coerce.string()
 })
 
+export const getWelcomeSettingsResponseCardDesignWidthMin = 320;
+export const getWelcomeSettingsResponseCardDesignWidthMax = 2400;
+
+export const getWelcomeSettingsResponseCardDesignHeightMin = 180;
+export const getWelcomeSettingsResponseCardDesignHeightMax = 1400;
+
+export const getWelcomeSettingsResponseCardDesignAvatarSizeMin = 32;
+export const getWelcomeSettingsResponseCardDesignAvatarSizeMax = 600;
+
+export const getWelcomeSettingsResponseCardDesignUsernameTextMax = 500;
+
+export const getWelcomeSettingsResponseCardDesignUsernameSizeMin = 8;
+export const getWelcomeSettingsResponseCardDesignUsernameSizeMax = 160;
+
+export const getWelcomeSettingsResponseCardDesignUsernameLineHeightMin = 0.8;
+export const getWelcomeSettingsResponseCardDesignUsernameLineHeightMax = 3;
+
+export const getWelcomeSettingsResponseCardDesignUsernameColorRegExp = new RegExp('^#[0-9a-fA-F]{6}$');
+export const getWelcomeSettingsResponseCardDesignUsernameShadowColorRegExp = new RegExp('^#[0-9a-fA-F]{6}$');
+export const getWelcomeSettingsResponseCardDesignUsernameShadowXMin = -50;
+export const getWelcomeSettingsResponseCardDesignUsernameShadowXMax = 50;
+
+export const getWelcomeSettingsResponseCardDesignUsernameShadowYMin = -50;
+export const getWelcomeSettingsResponseCardDesignUsernameShadowYMax = 50;
+
+export const getWelcomeSettingsResponseCardDesignUsernameShadowBlurMin = 0;
+export const getWelcomeSettingsResponseCardDesignUsernameShadowBlurMax = 60;
+
+export const getWelcomeSettingsResponseCardDesignExtraWidthMax = 1200;
+
+export const getWelcomeSettingsResponseCardDesignExtraHeightMax = 1200;
+
+export const getWelcomeSettingsResponseCardDesignExtraOpacityMin = 0;
+export const getWelcomeSettingsResponseCardDesignExtraOpacityMax = 100;
+
+export const getWelcomeSettingsResponseMessageSuiteWelcomeMessageMax = 1024;
+
+export const getWelcomeSettingsResponseMessageSuiteDmMessageMax = 1024;
+
+export const getWelcomeSettingsResponseMessageSuiteLeaveMessageMax = 1024;
+
+
+
 export const GetWelcomeSettingsResponse = zod.object({
   "guildId": zod.string(),
   "enabled": zod.boolean(),
@@ -148,6 +191,61 @@ export const GetWelcomeSettingsResponse = zod.object({
   "backgroundUrl": zod.string().nullable(),
   "includeInviter": zod.boolean(),
   "autoRoleIds": zod.array(zod.string()),
+  "cardDesign": zod.object({
+  "width": zod.number().min(getWelcomeSettingsResponseCardDesignWidthMin).max(getWelcomeSettingsResponseCardDesignWidthMax),
+  "height": zod.number().min(getWelcomeSettingsResponseCardDesignHeightMin).max(getWelcomeSettingsResponseCardDesignHeightMax),
+  "backgroundMode": zod.enum(['url', 'transparent']),
+  "backgroundUrl": zod.string().nullable(),
+  "avatar": zod.object({
+  "enabled": zod.boolean(),
+  "x": zod.number(),
+  "y": zod.number(),
+  "size": zod.number().min(getWelcomeSettingsResponseCardDesignAvatarSizeMin).max(getWelcomeSettingsResponseCardDesignAvatarSizeMax),
+  "shape": zod.enum(['square', 'rounded', 'circle'])
+}),
+  "username": zod.object({
+  "enabled": zod.boolean(),
+  "text": zod.string().max(getWelcomeSettingsResponseCardDesignUsernameTextMax),
+  "x": zod.number(),
+  "y": zod.number(),
+  "font": zod.enum(['CairoBold', 'ChangaBold', 'AlmaraiBold']),
+  "size": zod.number().min(getWelcomeSettingsResponseCardDesignUsernameSizeMin).max(getWelcomeSettingsResponseCardDesignUsernameSizeMax),
+  "lineHeight": zod.number().min(getWelcomeSettingsResponseCardDesignUsernameLineHeightMin).max(getWelcomeSettingsResponseCardDesignUsernameLineHeightMax),
+  "align": zod.enum(['right', 'center', 'left']),
+  "color": zod.string().regex(getWelcomeSettingsResponseCardDesignUsernameColorRegExp),
+  "shadow": zod.boolean(),
+  "shadowColor": zod.string().regex(getWelcomeSettingsResponseCardDesignUsernameShadowColorRegExp),
+  "shadowX": zod.number().min(getWelcomeSettingsResponseCardDesignUsernameShadowXMin).max(getWelcomeSettingsResponseCardDesignUsernameShadowXMax),
+  "shadowY": zod.number().min(getWelcomeSettingsResponseCardDesignUsernameShadowYMin).max(getWelcomeSettingsResponseCardDesignUsernameShadowYMax),
+  "shadowBlur": zod.number().min(getWelcomeSettingsResponseCardDesignUsernameShadowBlurMin).max(getWelcomeSettingsResponseCardDesignUsernameShadowBlurMax)
+}),
+  "extra": zod.object({
+  "enabled": zod.boolean(),
+  "url": zod.string().nullable(),
+  "x": zod.number(),
+  "y": zod.number(),
+  "width": zod.number().min(1).max(getWelcomeSettingsResponseCardDesignExtraWidthMax),
+  "height": zod.number().min(1).max(getWelcomeSettingsResponseCardDesignExtraHeightMax),
+  "opacity": zod.number().min(getWelcomeSettingsResponseCardDesignExtraOpacityMin).max(getWelcomeSettingsResponseCardDesignExtraOpacityMax)
+})
+}).optional(),
+  "messageSuite": zod.object({
+  "welcomeChannelEnabled": zod.boolean(),
+  "welcomeMessage": zod.string().max(getWelcomeSettingsResponseMessageSuiteWelcomeMessageMax),
+  "dmEnabled": zod.boolean(),
+  "dmMessage": zod.string().max(getWelcomeSettingsResponseMessageSuiteDmMessageMax),
+  "leaveEnabled": zod.boolean(),
+  "leaveMessage": zod.string().max(getWelcomeSettingsResponseMessageSuiteLeaveMessageMax)
+}).optional(),
+  "commandConfig": zod.array(zod.object({
+  "name": zod.string(),
+  "enabled": zod.boolean(),
+  "aliases": zod.array(zod.string()),
+  "allowedRoleIds": zod.array(zod.string()),
+  "blockedChannelIds": zod.array(zod.string()),
+  "deleteCommand": zod.boolean(),
+  "deleteBotResponse": zod.boolean()
+})).optional(),
   "updatedAt": zod.coerce.date().nullable()
 })
 
@@ -159,6 +257,49 @@ export const UpdateWelcomeSettingsParams = zod.object({
   "guildId": zod.coerce.string()
 })
 
+export const updateWelcomeSettingsBodyCardDesignWidthMin = 320;
+export const updateWelcomeSettingsBodyCardDesignWidthMax = 2400;
+
+export const updateWelcomeSettingsBodyCardDesignHeightMin = 180;
+export const updateWelcomeSettingsBodyCardDesignHeightMax = 1400;
+
+export const updateWelcomeSettingsBodyCardDesignAvatarSizeMin = 32;
+export const updateWelcomeSettingsBodyCardDesignAvatarSizeMax = 600;
+
+export const updateWelcomeSettingsBodyCardDesignUsernameTextMax = 500;
+
+export const updateWelcomeSettingsBodyCardDesignUsernameSizeMin = 8;
+export const updateWelcomeSettingsBodyCardDesignUsernameSizeMax = 160;
+
+export const updateWelcomeSettingsBodyCardDesignUsernameLineHeightMin = 0.8;
+export const updateWelcomeSettingsBodyCardDesignUsernameLineHeightMax = 3;
+
+export const updateWelcomeSettingsBodyCardDesignUsernameColorRegExp = new RegExp('^#[0-9a-fA-F]{6}$');
+export const updateWelcomeSettingsBodyCardDesignUsernameShadowColorRegExp = new RegExp('^#[0-9a-fA-F]{6}$');
+export const updateWelcomeSettingsBodyCardDesignUsernameShadowXMin = -50;
+export const updateWelcomeSettingsBodyCardDesignUsernameShadowXMax = 50;
+
+export const updateWelcomeSettingsBodyCardDesignUsernameShadowYMin = -50;
+export const updateWelcomeSettingsBodyCardDesignUsernameShadowYMax = 50;
+
+export const updateWelcomeSettingsBodyCardDesignUsernameShadowBlurMin = 0;
+export const updateWelcomeSettingsBodyCardDesignUsernameShadowBlurMax = 60;
+
+export const updateWelcomeSettingsBodyCardDesignExtraWidthMax = 1200;
+
+export const updateWelcomeSettingsBodyCardDesignExtraHeightMax = 1200;
+
+export const updateWelcomeSettingsBodyCardDesignExtraOpacityMin = 0;
+export const updateWelcomeSettingsBodyCardDesignExtraOpacityMax = 100;
+
+export const updateWelcomeSettingsBodyMessageSuiteWelcomeMessageMax = 1024;
+
+export const updateWelcomeSettingsBodyMessageSuiteDmMessageMax = 1024;
+
+export const updateWelcomeSettingsBodyMessageSuiteLeaveMessageMax = 1024;
+
+
+
 export const UpdateWelcomeSettingsBody = zod.object({
   "enabled": zod.boolean(),
   "style": zod.enum(['embed', 'banner']),
@@ -168,8 +309,106 @@ export const UpdateWelcomeSettingsBody = zod.object({
   "accentColor": zod.string(),
   "backgroundUrl": zod.string().nullable(),
   "includeInviter": zod.boolean(),
-  "autoRoleIds": zod.array(zod.string())
+  "autoRoleIds": zod.array(zod.string()),
+  "cardDesign": zod.object({
+  "width": zod.number().min(updateWelcomeSettingsBodyCardDesignWidthMin).max(updateWelcomeSettingsBodyCardDesignWidthMax),
+  "height": zod.number().min(updateWelcomeSettingsBodyCardDesignHeightMin).max(updateWelcomeSettingsBodyCardDesignHeightMax),
+  "backgroundMode": zod.enum(['url', 'transparent']),
+  "backgroundUrl": zod.string().nullable(),
+  "avatar": zod.object({
+  "enabled": zod.boolean(),
+  "x": zod.number(),
+  "y": zod.number(),
+  "size": zod.number().min(updateWelcomeSettingsBodyCardDesignAvatarSizeMin).max(updateWelcomeSettingsBodyCardDesignAvatarSizeMax),
+  "shape": zod.enum(['square', 'rounded', 'circle'])
+}),
+  "username": zod.object({
+  "enabled": zod.boolean(),
+  "text": zod.string().max(updateWelcomeSettingsBodyCardDesignUsernameTextMax),
+  "x": zod.number(),
+  "y": zod.number(),
+  "font": zod.enum(['CairoBold', 'ChangaBold', 'AlmaraiBold']),
+  "size": zod.number().min(updateWelcomeSettingsBodyCardDesignUsernameSizeMin).max(updateWelcomeSettingsBodyCardDesignUsernameSizeMax),
+  "lineHeight": zod.number().min(updateWelcomeSettingsBodyCardDesignUsernameLineHeightMin).max(updateWelcomeSettingsBodyCardDesignUsernameLineHeightMax),
+  "align": zod.enum(['right', 'center', 'left']),
+  "color": zod.string().regex(updateWelcomeSettingsBodyCardDesignUsernameColorRegExp),
+  "shadow": zod.boolean(),
+  "shadowColor": zod.string().regex(updateWelcomeSettingsBodyCardDesignUsernameShadowColorRegExp),
+  "shadowX": zod.number().min(updateWelcomeSettingsBodyCardDesignUsernameShadowXMin).max(updateWelcomeSettingsBodyCardDesignUsernameShadowXMax),
+  "shadowY": zod.number().min(updateWelcomeSettingsBodyCardDesignUsernameShadowYMin).max(updateWelcomeSettingsBodyCardDesignUsernameShadowYMax),
+  "shadowBlur": zod.number().min(updateWelcomeSettingsBodyCardDesignUsernameShadowBlurMin).max(updateWelcomeSettingsBodyCardDesignUsernameShadowBlurMax)
+}),
+  "extra": zod.object({
+  "enabled": zod.boolean(),
+  "url": zod.string().nullable(),
+  "x": zod.number(),
+  "y": zod.number(),
+  "width": zod.number().min(1).max(updateWelcomeSettingsBodyCardDesignExtraWidthMax),
+  "height": zod.number().min(1).max(updateWelcomeSettingsBodyCardDesignExtraHeightMax),
+  "opacity": zod.number().min(updateWelcomeSettingsBodyCardDesignExtraOpacityMin).max(updateWelcomeSettingsBodyCardDesignExtraOpacityMax)
 })
+}).optional(),
+  "messageSuite": zod.object({
+  "welcomeChannelEnabled": zod.boolean(),
+  "welcomeMessage": zod.string().max(updateWelcomeSettingsBodyMessageSuiteWelcomeMessageMax),
+  "dmEnabled": zod.boolean(),
+  "dmMessage": zod.string().max(updateWelcomeSettingsBodyMessageSuiteDmMessageMax),
+  "leaveEnabled": zod.boolean(),
+  "leaveMessage": zod.string().max(updateWelcomeSettingsBodyMessageSuiteLeaveMessageMax)
+}).optional(),
+  "commandConfig": zod.array(zod.object({
+  "name": zod.string(),
+  "enabled": zod.boolean(),
+  "aliases": zod.array(zod.string()),
+  "allowedRoleIds": zod.array(zod.string()),
+  "blockedChannelIds": zod.array(zod.string()),
+  "deleteCommand": zod.boolean(),
+  "deleteBotResponse": zod.boolean()
+})).optional()
+})
+
+export const updateWelcomeSettingsResponseCardDesignWidthMin = 320;
+export const updateWelcomeSettingsResponseCardDesignWidthMax = 2400;
+
+export const updateWelcomeSettingsResponseCardDesignHeightMin = 180;
+export const updateWelcomeSettingsResponseCardDesignHeightMax = 1400;
+
+export const updateWelcomeSettingsResponseCardDesignAvatarSizeMin = 32;
+export const updateWelcomeSettingsResponseCardDesignAvatarSizeMax = 600;
+
+export const updateWelcomeSettingsResponseCardDesignUsernameTextMax = 500;
+
+export const updateWelcomeSettingsResponseCardDesignUsernameSizeMin = 8;
+export const updateWelcomeSettingsResponseCardDesignUsernameSizeMax = 160;
+
+export const updateWelcomeSettingsResponseCardDesignUsernameLineHeightMin = 0.8;
+export const updateWelcomeSettingsResponseCardDesignUsernameLineHeightMax = 3;
+
+export const updateWelcomeSettingsResponseCardDesignUsernameColorRegExp = new RegExp('^#[0-9a-fA-F]{6}$');
+export const updateWelcomeSettingsResponseCardDesignUsernameShadowColorRegExp = new RegExp('^#[0-9a-fA-F]{6}$');
+export const updateWelcomeSettingsResponseCardDesignUsernameShadowXMin = -50;
+export const updateWelcomeSettingsResponseCardDesignUsernameShadowXMax = 50;
+
+export const updateWelcomeSettingsResponseCardDesignUsernameShadowYMin = -50;
+export const updateWelcomeSettingsResponseCardDesignUsernameShadowYMax = 50;
+
+export const updateWelcomeSettingsResponseCardDesignUsernameShadowBlurMin = 0;
+export const updateWelcomeSettingsResponseCardDesignUsernameShadowBlurMax = 60;
+
+export const updateWelcomeSettingsResponseCardDesignExtraWidthMax = 1200;
+
+export const updateWelcomeSettingsResponseCardDesignExtraHeightMax = 1200;
+
+export const updateWelcomeSettingsResponseCardDesignExtraOpacityMin = 0;
+export const updateWelcomeSettingsResponseCardDesignExtraOpacityMax = 100;
+
+export const updateWelcomeSettingsResponseMessageSuiteWelcomeMessageMax = 1024;
+
+export const updateWelcomeSettingsResponseMessageSuiteDmMessageMax = 1024;
+
+export const updateWelcomeSettingsResponseMessageSuiteLeaveMessageMax = 1024;
+
+
 
 export const UpdateWelcomeSettingsResponse = zod.object({
   "guildId": zod.string(),
@@ -182,6 +421,61 @@ export const UpdateWelcomeSettingsResponse = zod.object({
   "backgroundUrl": zod.string().nullable(),
   "includeInviter": zod.boolean(),
   "autoRoleIds": zod.array(zod.string()),
+  "cardDesign": zod.object({
+  "width": zod.number().min(updateWelcomeSettingsResponseCardDesignWidthMin).max(updateWelcomeSettingsResponseCardDesignWidthMax),
+  "height": zod.number().min(updateWelcomeSettingsResponseCardDesignHeightMin).max(updateWelcomeSettingsResponseCardDesignHeightMax),
+  "backgroundMode": zod.enum(['url', 'transparent']),
+  "backgroundUrl": zod.string().nullable(),
+  "avatar": zod.object({
+  "enabled": zod.boolean(),
+  "x": zod.number(),
+  "y": zod.number(),
+  "size": zod.number().min(updateWelcomeSettingsResponseCardDesignAvatarSizeMin).max(updateWelcomeSettingsResponseCardDesignAvatarSizeMax),
+  "shape": zod.enum(['square', 'rounded', 'circle'])
+}),
+  "username": zod.object({
+  "enabled": zod.boolean(),
+  "text": zod.string().max(updateWelcomeSettingsResponseCardDesignUsernameTextMax),
+  "x": zod.number(),
+  "y": zod.number(),
+  "font": zod.enum(['CairoBold', 'ChangaBold', 'AlmaraiBold']),
+  "size": zod.number().min(updateWelcomeSettingsResponseCardDesignUsernameSizeMin).max(updateWelcomeSettingsResponseCardDesignUsernameSizeMax),
+  "lineHeight": zod.number().min(updateWelcomeSettingsResponseCardDesignUsernameLineHeightMin).max(updateWelcomeSettingsResponseCardDesignUsernameLineHeightMax),
+  "align": zod.enum(['right', 'center', 'left']),
+  "color": zod.string().regex(updateWelcomeSettingsResponseCardDesignUsernameColorRegExp),
+  "shadow": zod.boolean(),
+  "shadowColor": zod.string().regex(updateWelcomeSettingsResponseCardDesignUsernameShadowColorRegExp),
+  "shadowX": zod.number().min(updateWelcomeSettingsResponseCardDesignUsernameShadowXMin).max(updateWelcomeSettingsResponseCardDesignUsernameShadowXMax),
+  "shadowY": zod.number().min(updateWelcomeSettingsResponseCardDesignUsernameShadowYMin).max(updateWelcomeSettingsResponseCardDesignUsernameShadowYMax),
+  "shadowBlur": zod.number().min(updateWelcomeSettingsResponseCardDesignUsernameShadowBlurMin).max(updateWelcomeSettingsResponseCardDesignUsernameShadowBlurMax)
+}),
+  "extra": zod.object({
+  "enabled": zod.boolean(),
+  "url": zod.string().nullable(),
+  "x": zod.number(),
+  "y": zod.number(),
+  "width": zod.number().min(1).max(updateWelcomeSettingsResponseCardDesignExtraWidthMax),
+  "height": zod.number().min(1).max(updateWelcomeSettingsResponseCardDesignExtraHeightMax),
+  "opacity": zod.number().min(updateWelcomeSettingsResponseCardDesignExtraOpacityMin).max(updateWelcomeSettingsResponseCardDesignExtraOpacityMax)
+})
+}).optional(),
+  "messageSuite": zod.object({
+  "welcomeChannelEnabled": zod.boolean(),
+  "welcomeMessage": zod.string().max(updateWelcomeSettingsResponseMessageSuiteWelcomeMessageMax),
+  "dmEnabled": zod.boolean(),
+  "dmMessage": zod.string().max(updateWelcomeSettingsResponseMessageSuiteDmMessageMax),
+  "leaveEnabled": zod.boolean(),
+  "leaveMessage": zod.string().max(updateWelcomeSettingsResponseMessageSuiteLeaveMessageMax)
+}).optional(),
+  "commandConfig": zod.array(zod.object({
+  "name": zod.string(),
+  "enabled": zod.boolean(),
+  "aliases": zod.array(zod.string()),
+  "allowedRoleIds": zod.array(zod.string()),
+  "blockedChannelIds": zod.array(zod.string()),
+  "deleteCommand": zod.boolean(),
+  "deleteBotResponse": zod.boolean()
+})).optional(),
   "updatedAt": zod.coerce.date().nullable()
 })
 

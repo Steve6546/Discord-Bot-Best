@@ -281,6 +281,14 @@ components:
           type: array
           items:
             type: string
+        cardDesign:
+          $ref: "#/components/schemas/CardDesign"
+        messageSuite:
+          $ref: "#/components/schemas/MessageSuite"
+        commandConfig:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommandConfig"
         updatedAt:
           type: ["string", "null"]
           format: date-time
@@ -309,4 +317,95 @@ components:
           type: array
           items:
             type: string
+        cardDesign:
+          $ref: "#/components/schemas/CardDesign"
+        messageSuite:
+          $ref: "#/components/schemas/MessageSuite"
+        commandConfig:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommandConfig"
+    CardDesign:
+      type: object
+      required: [width, height, backgroundMode, backgroundUrl, avatar, username, extra]
+      properties:
+        width: { type: number, minimum: 320, maximum: 2400 }
+        height: { type: number, minimum: 180, maximum: 1400 }
+        backgroundMode:
+          type: string
+          enum: [url, transparent]
+        backgroundUrl:
+          type: ["string", "null"]
+        avatar:
+          type: object
+          required: [enabled, x, y, size, shape]
+          properties:
+            enabled: { type: boolean }
+            x: { type: number }
+            y: { type: number }
+            size: { type: number, minimum: 32, maximum: 600 }
+            shape:
+              type: string
+              enum: [square, rounded, circle]
+        username:
+          type: object
+          required: [enabled, text, x, y, font, size, lineHeight, align, color, shadow, shadowColor, shadowX, shadowY, shadowBlur]
+          properties:
+            enabled: { type: boolean }
+            text: { type: string, maxLength: 500 }
+            x: { type: number }
+            y: { type: number }
+            font:
+              type: string
+              enum: [CairoBold, ChangaBold, AlmaraiBold]
+            size: { type: number, minimum: 8, maximum: 160 }
+            lineHeight: { type: number, minimum: 0.8, maximum: 3 }
+            align:
+              type: string
+              enum: [right, center, left]
+            color: { type: string, pattern: "^#[0-9a-fA-F]{6}$" }
+            shadow: { type: boolean }
+            shadowColor: { type: string, pattern: "^#[0-9a-fA-F]{6}$" }
+            shadowX: { type: number, minimum: -50, maximum: 50 }
+            shadowY: { type: number, minimum: -50, maximum: 50 }
+            shadowBlur: { type: number, minimum: 0, maximum: 60 }
+        extra:
+          type: object
+          required: [enabled, url, x, y, width, height, opacity]
+          properties:
+            enabled: { type: boolean }
+            url:
+              type: ["string", "null"]
+            x: { type: number }
+            y: { type: number }
+            width: { type: number, minimum: 1, maximum: 1200 }
+            height: { type: number, minimum: 1, maximum: 1200 }
+            opacity: { type: number, minimum: 0, maximum: 100 }
+    MessageSuite:
+      type: object
+      required: [welcomeChannelEnabled, welcomeMessage, dmEnabled, dmMessage, leaveEnabled, leaveMessage]
+      properties:
+        welcomeChannelEnabled: { type: boolean }
+        welcomeMessage: { type: string, maxLength: 1024 }
+        dmEnabled: { type: boolean }
+        dmMessage: { type: string, maxLength: 1024 }
+        leaveEnabled: { type: boolean }
+        leaveMessage: { type: string, maxLength: 1024 }
+    CommandConfig:
+      type: object
+      required: [name, enabled, aliases, allowedRoleIds, blockedChannelIds, deleteCommand, deleteBotResponse]
+      properties:
+        name: { type: string }
+        enabled: { type: boolean }
+        aliases:
+          type: array
+          items: { type: string }
+        allowedRoleIds:
+          type: array
+          items: { type: string }
+        blockedChannelIds:
+          type: array
+          items: { type: string }
+        deleteCommand: { type: boolean }
+        deleteBotResponse: { type: boolean }
 

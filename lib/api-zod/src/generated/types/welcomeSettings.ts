@@ -5,6 +5,9 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { CardDesign } from './cardDesign';
+import type { CommandConfig } from './commandConfig';
+import type { MessageSuite } from './messageSuite';
 import type { WelcomeSettingsStyle } from './welcomeSettingsStyle';
 
 export interface WelcomeSettings {
@@ -20,6 +23,9 @@ export interface WelcomeSettings {
   backgroundUrl: string | null;
   includeInviter: boolean;
   autoRoleIds: string[];
+  cardDesign?: CardDesign;
+  messageSuite?: MessageSuite;
+  commandConfig?: CommandConfig[];
   /** @nullable */
   updatedAt: Date | null;
 }

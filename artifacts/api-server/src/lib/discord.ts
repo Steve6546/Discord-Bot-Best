@@ -5,10 +5,14 @@ import {
   PermissionFlagsBits,
   type Guild,
   type GuildMember,
+  type PartialGuildMember,
 } from "discord.js";
 import { and, count, desc, eq, gte } from "drizzle-orm";
 import {
   db,
+  defaultCardDesign,
+  defaultCommandConfig,
+  defaultMessageSuite,
   guildWelcomeSettingsTable,
   welcomeEventsTable,
   type GuildWelcomeSettings,
@@ -60,6 +64,10 @@ function createClient(): Client | null {
     void handleMemberJoin(member);
   });
 
+  nextClient.on("guildMemberRemove", (member) => {
+    void handleMemberLeave(member);
+  });
+
   client = nextClient;
   return nextClient;
 }
@@ -89,7 +97,14 @@ export async function getReadyClient(): Promise<Client | null> {
 }
 
 export function getWelcomeDefaults(guildId: string) {
-  return { guildId, ...welcomeDefaults, updatedAt: null };
+  return {
+    guildId,
+    ...welcomeDefaults,
+    cardDesign: defaultCardDesign,
+    messageSuite: defaultMessageSuite,
+    commandConfig: defaultCommandConfig,
+    updatedAt: null,
+  };
 }
 
 export async function getSavedSettings(
@@ -291,7 +306,13 @@ async function findUsedInvite(member: GuildMember) {
       const before = previous.get(code);
       return current.uses > (before?.uses ?? 0);
     });
-    return used?.[1].inviterId ?? null;
+    return used
+      ? {
+          inviterId: used[1].inviterId,
+          inviteCode: used[0],
+          invitesCount: used[1].uses,
+        }
+      : null;
   } catch (error) {
     logger.warn(
       { err: error, guildId: member.guild.id },
@@ -301,6 +322,48 @@ async function findUsedInvite(member: GuildMember) {
   }
 }
 
+function daysSince(value: Date | null | undefined) {
+  if (!value) return 0;
+  return Math.max(0, Math.floor((Date.now() - value.getTime()) / 86_400_000));
+}
+
+function renderTemplate(
+  text: string,
+  context: {
+    member: GuildMember | PartialGuildMember;
+    inviterId: string | null;
+    inviterName: string;
+    inviteCode: string;
+    invitesCount: number;
+    joinedAt: Date | null;
+  },
+) {
+  const { member, inviterId, inviterName, inviteCode, invitesCount, joinedAt } =
+    context;
+  const values: Record<string, string> = {
+    "[user]": member.toString(),
+    "[userName]": member.displayName,
+    "[userCreatedDate]": member.user.createdAt.toLocaleDateString("ar-SA"),
+    "[userCreatedDays]": String(daysSince(member.user.createdAt)),
+    "[serverName]": member.guild.name,
+    "[memberCount]": member.guild.memberCount.toLocaleString("ar-SA"),
+    "[inviter]": inviterId ? `<@${inviterId}>` : "غير معروف",
+    "[inviterName]": inviterName,
+    "[invitesCount]": String(invitesCount),
+    "[inviteCode]": inviteCode || "غير معروف",
+    "[joinedDate]": (joinedAt ?? new Date()).toLocaleDateString("ar-SA"),
+    "[joinedDays]": String(daysSince(joinedAt)),
+    "[wasInvitedBy]": inviterId
+      ? `تمت دعوته بواسطة ${inviterName} (<@${inviterId}>)`
+      : "لم يتم تحديد صاحب الدعوة",
+    "[prefix]": "!",
+  };
+  return Object.entries(values).reduce(
+    (result, [token, value]) => result.replaceAll(token, value),
+    text,
+  );
+}
+
 async function handleMemberJoin(member: GuildMember) {
   const settings = await getSavedSettings(member.guild.id);
   const activeSettings = settings ?? getWelcomeDefaults(member.guild.id);
@@ -308,9 +371,19 @@ async function handleMemberJoin(member: GuildMember) {
     return;
   }
 
-  const inviterId = activeSettings.includeInviter
+  const invite = activeSettings.includeInviter
     ? await findUsedInvite(member)
     : null;
+  const inviterId = invite?.inviterId ?? null;
+  let inviterName = "غير معروف";
+  if (inviterId) {
+    try {
+      const inviter = await member.guild.members.fetch(inviterId);
+      inviterName = inviter.displayName;
+    } catch {
+      inviterName = `<@${inviterId}>`;
+    }
+  }
 
   for (const roleId of activeSettings.autoRoleIds) {
     try {
@@ -329,7 +402,35 @@ async function handleMemberJoin(member: GuildMember) {
     inviterId,
   });
 
-  if (!activeSettings.channelId) {
+  const templateContext = {
+    member,
+    inviterId,
+    inviterName,
+    inviteCode: invite?.inviteCode ?? "",
+    invitesCount: invite?.invitesCount ?? 0,
+    joinedAt: member.joinedAt,
+  };
+
+  if (activeSettings.messageSuite.dmEnabled) {
+    try {
+      await member.send({
+        content: renderTemplate(
+          activeSettings.messageSuite.dmMessage,
+          templateContext,
+        ),
+      });
+    } catch (error) {
+      logger.warn(
+        { err: error, guildId: member.guild.id, memberId: member.id },
+        "Could not send welcome DM",
+      );
+    }
+  }
+
+  if (
+    !activeSettings.channelId ||
+    !activeSettings.messageSuite.welcomeChannelEnabled
+  ) {
     return;
   }
 
@@ -339,22 +440,28 @@ async function handleMemberJoin(member: GuildMember) {
   }
 
   const replaceTokens = (text: string) =>
-    text
-      .replaceAll("{member}", member.toString())
-      .replaceAll(
-        "{inviter}",
-        inviterId ? `<@${inviterId}>` : "غير معروف",
-      );
+    renderTemplate(
+      text.replaceAll("{member}", "[user]").replaceAll("{inviter}", "[inviter]"),
+      templateContext,
+    );
 
   const embed = new EmbedBuilder()
     .setColor(resolveEmbedColor(activeSettings.accentColor))
     .setTitle(replaceTokens(activeSettings.headline))
-    .setDescription(replaceTokens(activeSettings.body))
+    .setDescription(
+      replaceTokens(
+        activeSettings.messageSuite.welcomeMessage || activeSettings.body,
+      ),
+    )
     .setThumbnail(member.displayAvatarURL({ size: 256 }))
     .setTimestamp();
 
-  if (activeSettings.backgroundUrl) {
-    embed.setImage(activeSettings.backgroundUrl);
+  const backgroundUrl =
+    activeSettings.cardDesign?.backgroundMode === "url"
+      ? activeSettings.cardDesign.backgroundUrl
+      : activeSettings.backgroundUrl;
+  if (backgroundUrl) {
+    embed.setImage(backgroundUrl);
   }
 
   try {
@@ -363,6 +470,31 @@ async function handleMemberJoin(member: GuildMember) {
     logger.warn(
       { err: error, guildId: member.guild.id, channelId: activeSettings.channelId },
       "Could not send welcome message",
+    );
+  }
+}
+
+async function handleMemberLeave(member: PartialGuildMember) {
+  const settings = await getSavedSettings(member.guild.id);
+  if (!settings?.messageSuite.leaveEnabled || !settings.channelId) return;
+  const channel = member.guild.channels.cache.get(settings.channelId);
+  if (!channel?.isTextBased() || !("send" in channel)) return;
+
+  try {
+    await channel.send({
+      content: renderTemplate(settings.messageSuite.leaveMessage, {
+        member,
+        inviterId: null,
+        inviterName: "غير معروف",
+        inviteCode: "",
+        invitesCount: 0,
+        joinedAt: member.joinedAt,
+      }),
+    });
+  } catch (error) {
+    logger.warn(
+      { err: error, guildId: member.guild.id },
+      "Could not send leave message",
     );
   }
 }

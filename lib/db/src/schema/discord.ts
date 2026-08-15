@@ -11,6 +11,127 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
+export type CardDesign = {
+  width: number;
+  height: number;
+  backgroundMode: "url" | "transparent";
+  backgroundUrl: string | null;
+  avatar: {
+    enabled: boolean;
+    x: number;
+    y: number;
+    size: number;
+    shape: "square" | "rounded" | "circle";
+  };
+  username: {
+    enabled: boolean;
+    text: string;
+    x: number;
+    y: number;
+    font: "CairoBold" | "ChangaBold" | "AlmaraiBold";
+    size: number;
+    lineHeight: number;
+    align: "right" | "center" | "left";
+    color: string;
+    shadow: boolean;
+    shadowColor: string;
+    shadowX: number;
+    shadowY: number;
+    shadowBlur: number;
+  };
+  extra: {
+    enabled: boolean;
+    url: string | null;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    opacity: number;
+  };
+};
+
+export type MessageSuite = {
+  welcomeChannelEnabled: boolean;
+  welcomeMessage: string;
+  dmEnabled: boolean;
+  dmMessage: string;
+  leaveEnabled: boolean;
+  leaveMessage: string;
+};
+
+export type CommandConfig = {
+  name: string;
+  enabled: boolean;
+  aliases: string[];
+  allowedRoleIds: string[];
+  blockedChannelIds: string[];
+  deleteCommand: boolean;
+  deleteBotResponse: boolean;
+};
+
+export const defaultCardDesign: CardDesign = {
+  width: 1100,
+  height: 500,
+  backgroundMode: "transparent",
+  backgroundUrl: null,
+  avatar: { enabled: true, x: 72, y: 98, size: 148, shape: "circle" },
+  username: {
+    enabled: true,
+    text: "[userName]",
+    x: 260,
+    y: 145,
+    font: "CairoBold",
+    size: 48,
+    lineHeight: 1.2,
+    align: "right",
+    color: "#FFFFFF",
+    shadow: true,
+    shadowColor: "#000000",
+    shadowX: 2,
+    shadowY: 2,
+    shadowBlur: 8,
+  },
+  extra: {
+    enabled: false,
+    url: null,
+    x: 820,
+    y: 280,
+    width: 180,
+    height: 140,
+    opacity: 100,
+  },
+};
+
+export const defaultMessageSuite: MessageSuite = {
+  welcomeChannelEnabled: true,
+  welcomeMessage: "أهلًا بك [user] في [serverName]. أنت العضو رقم [memberCount].",
+  dmEnabled: false,
+  dmMessage: "مرحبًا [userName]، سعداء بانضمامك إلى [serverName].",
+  leaveEnabled: false,
+  leaveMessage: "غادر [userName] السيرفر. [wasInvitedBy]",
+};
+
+export const defaultCommandConfig: CommandConfig[] = [
+  {
+    name: "welcome",
+    enabled: true,
+    aliases: ["join"],
+    allowedRoleIds: [],
+    blockedChannelIds: [],
+    deleteCommand: false,
+    deleteBotResponse: false,
+  },
+  {
+    name: "setup",
+    enabled: true,
+    aliases: ["config"],
+    allowedRoleIds: [],
+    blockedChannelIds: [],
+    deleteCommand: true,
+    deleteBotResponse: false,
+  },
+];
+
 export const guildWelcomeSettingsTable = pgTable(
   "guild_welcome_settings",
   {
@@ -27,6 +148,12 @@ export const guildWelcomeSettingsTable = pgTable(
     backgroundUrl: text("background_url"),
     includeInviter: boolean("include_inviter").notNull().default(true),
     autoRoleIds: jsonb("auto_role_ids").$type<string[]>().notNull().default([]),
+    cardDesign: jsonb("card_design").$type<CardDesign>().notNull().default(defaultCardDesign),
+    messageSuite: jsonb("message_suite").$type<MessageSuite>().notNull().default(defaultMessageSuite),
+    commandConfig: jsonb("command_config")
+      .$type<CommandConfig[]>()
+      .notNull()
+      .default(defaultCommandConfig),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

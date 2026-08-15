@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { createHash, randomBytes } from "node:crypto";
 import { z } from "zod/v4";
+import { eq } from "drizzle-orm";
 import {
   GetDashboardSummaryResponse,
   GetDiscordStatusResponse,
@@ -17,6 +18,9 @@ import {
 } from "@workspace/api-zod";
 import {
   db,
+  defaultCardDesign,
+  defaultCommandConfig,
+  defaultMessageSuite,
   discordSessionsTable,
   guildWelcomeSettingsTable,
   type InsertGuildWelcomeSettings,
@@ -110,6 +114,9 @@ router.put("/guilds/:guildId/settings", async (req, res) => {
   const values: InsertGuildWelcomeSettings = {
     guildId: params.guildId,
     ...input,
+    cardDesign: input.cardDesign ?? defaultCardDesign,
+    messageSuite: input.messageSuite ?? defaultMessageSuite,
+    commandConfig: input.commandConfig ?? defaultCommandConfig,
   };
 
   const [settings] = await db
@@ -127,6 +134,9 @@ router.put("/guilds/:guildId/settings", async (req, res) => {
         backgroundUrl: input.backgroundUrl,
         includeInviter: input.includeInviter,
         autoRoleIds: input.autoRoleIds,
+        cardDesign: input.cardDesign ?? defaultCardDesign,
+        messageSuite: input.messageSuite ?? defaultMessageSuite,
+        commandConfig: input.commandConfig ?? defaultCommandConfig,
         updatedAt: new Date(),
       },
     })
